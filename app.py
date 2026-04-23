@@ -23,7 +23,7 @@ TEMP_DIR = BASE_DIR / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
 
 # WINDOWS
-LIBREOFFICE_CMD = r"C:\Program Files\LibreOffice\program\soffice.exe"
+LIBREOFFICE_CMD = "soffice"
 
 
 def texto_pagina(pdf_reader: PdfReader, page_index: int) -> str:
