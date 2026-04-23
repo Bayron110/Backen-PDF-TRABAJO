@@ -6,14 +6,21 @@ from pypdf import PdfReader, PdfWriter
 import shutil
 import subprocess
 import uuid
-import os
 
 app = FastAPI(title="Convertidor DOCX a PDF")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:5501",
+        "http://localhost:5501",
+        "http://127.0.0.1:4200",
+        "http://localhost:4200",
+        "https://capacitacindocenteitsqmet.netlify.app/"
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -22,7 +29,6 @@ BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
 
-# WINDOWS
 LIBREOFFICE_CMD = "soffice"
 
 
@@ -41,11 +47,9 @@ def pagina_esta_vacia_o_casi_vacia(pdf_reader: PdfReader, page_index: int) -> bo
     texto = texto_pagina(pdf_reader, page_index)
     texto_limpio = " ".join(texto.split())
 
-    # Sin texto o con texto mínimo
     if not texto_limpio:
         return True
 
-    # Si tiene muy poquitos caracteres, también la tratamos como vacía
     if len(texto_limpio) < 20:
         return True
 
@@ -56,23 +60,19 @@ def limpiar_pdf_patrocinio(pdf_path: str) -> str:
     reader = PdfReader(pdf_path)
     total_paginas = len(reader.pages)
 
-    # Si ya tiene 3 o menos, no hacemos nada
     if total_paginas <= 3:
         return pdf_path
 
     writer = PdfWriter()
     paginas_contenido = []
 
-    # Conservamos solo páginas que tengan contenido real
     for i in range(total_paginas):
         if not pagina_esta_vacia_o_casi_vacia(reader, i):
             paginas_contenido.append(i)
 
-    # Si no detectó nada, por seguridad devolver original
     if not paginas_contenido:
         return pdf_path
 
-    # Si después de limpiar quedan más de 3, nos quedamos con las primeras 3
     paginas_finales = paginas_contenido[:3]
 
     for i in paginas_finales:
@@ -133,12 +133,11 @@ async def convertir_pdf(
 
         pdf_final = ruta_pdf
 
-        # SOLO para patrocinio
         if tipo_documento == "patrocinio":
             pdf_final = Path(limpiar_pdf_patrocinio(str(ruta_pdf)))
 
         return FileResponse(
-            path=pdf_final,
+            path=str(pdf_final),
             media_type="application/pdf",
             filename="documento.pdf"
         )
