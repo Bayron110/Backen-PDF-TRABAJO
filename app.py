@@ -10,8 +10,16 @@ app = FastAPI(title="Convertidor DOCX a PDF")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=[
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:5501",
+        "http://localhost:5501",
+        "http://127.0.0.1:4200",
+        "http://localhost:4200",
+        "https://capacitacindocenteitsqmet.netlify.app"
+    ],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -20,8 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "temp"
 TEMP_DIR.mkdir(exist_ok=True)
 
-# WINDOWS
-LIBREOFFICE_CMD = r"C:\Program Files\LibreOffice\program\soffice.exe"
+LIBREOFFICE_CMD = "soffice"
 
 
 @app.get("/")
@@ -68,7 +75,7 @@ async def convertir_pdf(file: UploadFile = File(...)):
             raise HTTPException(status_code=500, detail="No se generó el PDF")
 
         return FileResponse(
-            path=ruta_pdf,
+            path=str(ruta_pdf),
             media_type="application/pdf",
             filename="documento.pdf"
         )
